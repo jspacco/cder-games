@@ -11,13 +11,24 @@ public class TicTacToeService
     // X always goes first
     private Map<String, Board> boards = new HashMap<>();
     private Map<String, Character> currentPlayer = new HashMap<>();
+    private Map<String, String> opponents = new HashMap<>();
     
     public Board newGame(String user)
     {
         Board game = new Board();
         boards.put(user, game);
+        opponents.putIfAbsent(user, "random");
         currentPlayer.put(user, game.getCurrentPlayer());
         return game;
+    }
+
+    public boolean setOpponent(String user, String opponent)
+    {
+        if (!opponent.equals("random") && !opponent.equals("smart")) {
+            return false;
+        }
+        opponents.put(user, opponent);
+        return true;
     }
 
     public boolean isLegalMove(String user, int row, int col)
@@ -42,11 +53,15 @@ public class TicTacToeService
         
         game.move(r, c);
 
-        //randomAIMove(game);
-
         if (!game.isGameOver()) {
-            int[] aiMove = goodAIMove(game);
-            game.move(aiMove[0], aiMove[1]);
+            if (opponents.get(user).equals("random")) {
+                randomAIMove(game);
+            } else if (opponents.get(user).equals("goodAI")) {
+                int[] aiMove = goodAIMove(game);
+                game.move(aiMove[0], aiMove[1]);
+            } else {
+                throw new IllegalArgumentException("Unknown opponent type: " + opponents.get(user));
+            }
         }
 
         return game;
@@ -105,14 +120,22 @@ public class TicTacToeService
         if (!game.isGameOver()) {
             // AI should now move
             // For simplicity, let's just make a random legal move
-            label: for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 3; j++) {
-                    if (game.isLegalMove(i, j)) {
-                        game.move(i, j);
-                        break label;
-                    }
+            while (true) {
+                int i = (int) (Math.random() * 3);
+                int j = (int) (Math.random() * 3);
+                if (game.isLegalMove(i, j)) {
+                    game.move(i, j);
+                    break;
                 }
             }
+            // label: for (int i = 0; i < 3; i++) {
+            //     for (int j = 0; j < 3; j++) {
+            //         if (game.isLegalMove(i, j)) {
+            //             game.move(i, j);
+            //             break label;
+            //         }
+            //     }
+            // }
         }
     }
 

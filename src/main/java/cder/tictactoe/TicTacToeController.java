@@ -47,6 +47,16 @@ public class TicTacToeController {
         return ResponseEntity.ok(board);
     }
 
+    @GetMapping("/ai/{opponent}")
+    public ResponseEntity<?> setAI(@RequestParam String user, @PathVariable String opponent)
+    {
+        if (service.setOpponent(user, opponent)) {
+            return ResponseEntity.ok(Map.of("status", "Opponent set to " + opponent));
+        } else {
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid opponent type, must be 'random' or 'smart'"));
+        }
+    }
+
     @GetMapping("/state")
     public ResponseEntity<?> state(@RequestParam String user)
     {
