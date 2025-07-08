@@ -22,7 +22,7 @@ public class TicTacToeController {
         if (!service.hasGame(user)) {
             return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(Map.of("error", "Game not started. Call /newgame first."));
+                .body(Map.of("error", "Game not started for user " +user+ " Call /newgame first."));
         }
 
         if (!service.isLegalMove(user, row, col)){

@@ -11,6 +11,8 @@ public class TicTacToeService
     // X always goes first
     private Map<String, Board> boards = new HashMap<>();
     private Map<String, Character> currentPlayer = new HashMap<>();
+    // opponent AI can be "random" or "smart"
+    // "random" plays a random legal move, "smart" plays the best move
     private Map<String, String> opponents = new HashMap<>();
     
     public Board newGame(String user)
