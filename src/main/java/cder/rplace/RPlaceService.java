@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -14,13 +15,18 @@ public class RPlaceService
     private final RPlaceGrid grid;
     private final AccountManager accountManager;
     private final Map<String, UserQuota> userQuotas = new ConcurrentHashMap<>();
-    private static final int MAX_PIXELS_PER_BATCH = 20;
-    private static final long COOLDOWN_MILLIS = 2 * 60 * 1000; // 2 minutes
+    private final int maxPixelsPerBatch;
+    private final long cooldownMillis;
 
 
-    public RPlaceService(RPlaceGrid grid, AccountManager manager) {
+    public RPlaceService(RPlaceGrid grid, AccountManager manager,
+        @Value("${rplace.max-pixels-per-batch:20}") int maxPixelsPerBatch,
+        @Value("${rplace.cooldown-millis:120000}") long cooldownMillis)
+    {
         this.grid = grid;
         this.accountManager = manager;
+        this.maxPixelsPerBatch = maxPixelsPerBatch;
+        this.cooldownMillis = cooldownMillis;
     }
 
     public boolean authenticate(String user, String password) {
@@ -84,13 +90,13 @@ public class RPlaceService
         UserQuota quota = userQuotas.computeIfAbsent(user, u -> new UserQuota(0, now));
 
         synchronized (quota) {
-            if (now - quota.batchStartTime > COOLDOWN_MILLIS) {
+            if (now - quota.batchStartTime > cooldownMillis) {
                 // Cooldown expired: reset quota
                 quota.pixelsUsed = 0;
                 quota.batchStartTime = now;
             }
 
-            if (quota.pixelsUsed < MAX_PIXELS_PER_BATCH) {
+            if (quota.pixelsUsed < maxPixelsPerBatch) {
                 quota.pixelsUsed++;
                 return true;
             } else {
@@ -110,14 +116,16 @@ public class RPlaceService
     }
 
 
-    public long getNextPixelTime(String user) {
+    public int getNextPixelTime(String user) {
         UserQuota quota = userQuotas.get(user);
         if (quota == null) {
             throw new IllegalArgumentException("User not found");
         }
         long now = System.currentTimeMillis();
-        long nextPixelTime = quota.batchStartTime + COOLDOWN_MILLIS;
-        return Math.max(0, nextPixelTime - now);
+        long nextPixelTime = quota.batchStartTime + cooldownMillis;
+        long timeToNextPixel = Math.max(0, nextPixelTime - now);
+        // return time in seconds
+        return (int) timeToNextPixel / 1000; 
     }
 
 }

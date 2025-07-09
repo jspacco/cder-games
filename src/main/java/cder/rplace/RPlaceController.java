@@ -25,16 +25,8 @@ public class RPlaceController
     }
 
     @GetMapping("/canvas")
-    public String canvas(
-        // @RequestParam String user,
-        // @RequestParam String password,
-        Model model)
+    public String canvas(Model model)
     {
-        // if (!service.authenticate(user, password))
-        // {
-        //     model.addAttribute("error", "cannot authenticate "+user+" with given password");
-        //     return "error";
-        // }
         model.addAttribute("width", service.getWidth());
         model.addAttribute("height", service.getHeight());
         return "canvas";
@@ -52,39 +44,39 @@ public class RPlaceController
         // authenticate user
         if (!service.authenticate(user, password))
         {
-            model.addAttribute("error", "cannot authenticate "+user+" with given password");
-            System.out.println("ERROR\n\n");
-            return "error";
+            throw new AuthenticationException("Cannot authenticate user: " + user);
         }
 
         // bounds check
         if (!service.boundsCheck(row, col)) {
-            model.addAttribute("error", 
-                "row or column index out of bounds. Max row is "+
+            throw new BadPixelRequestException(
+                "Row "+row+" or col "+col+" out of bounds. "+
+                "Max row is "+
                 service.getHeight()+", max col is "+service.getWidth());
-            return "error";
         }
 
         // check if color is valid
         if (!service.isValidColor(color)) {
-            model.addAttribute("error", "Invalid color: " + color);
-            return "error";
+            throw new BadPixelRequestException("Invalid color: " + color + 
+                ". Valid colors are: red, blue, green, magenta, white, black, yellow, orange, cyan, pink, gray, darkgray, lightgray.");
         }
 
+        // rate limit check
         if (!service.canPlacePixel(user)) {
-            long nextPixelTime = service.getNextPixelTime(user);
-            String message = "Rate limit exceeded, next pixel in "+nextPixelTime+" ms";
-            System.out.println(message);
-            model.addAttribute("error", message);
-            return "error";
+            int timeToNextPixel = service.getNextPixelTime(user);
+            throw new BadPixelRequestException("Rate limit exceeded for user: " + user+
+                ". Next pixel can be placed in " + timeToNextPixel +
+                " seconds.");
         }
 
         boolean success = service.setColor(row, col, color);
-        if (success) {
-            model.addAttribute("success", "successful setColor");
-        } else {
-            model.addAttribute("error", "failed to setColor()");
+        if (!success) {
+            throw new BadPixelRequestException(
+                "Failed to set color at (" + row + ", " + col + 
+                "). Unknown error! This should not happen if bounds and color checks passed."+
+                " Tell Spacco to check the server logs.");
         }
+        model.addAttribute("success", "successfully setColor");
         model.addAttribute("width", service.getWidth());
         model.addAttribute("height", service.getHeight());
         return "canvas";

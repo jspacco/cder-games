@@ -1,10 +1,15 @@
 package cder.rplace;
 
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ClientConnector
 {
@@ -24,6 +29,19 @@ public class ClientConnector
         this.params = "?user=" + user + "&password=" + password;
     }
 
+    private Map<String, Object> parseErrorResponse(String json) {
+        try {
+            // Gson gson = new Gson();
+            // Type mapType = new TypeToken<Map<String, Object>>() {}.getType();
+            // Map<String, Object> result = gson.fromJson(json, mapType);
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, Object> result = mapper.readValue(json, Map.class);
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse error response", e);
+        }
+    }
+
     public boolean setColor(String user, String password, int row, int col, String color)
     {
         String url = baseUrl + "/rplace/setColor" + params + "&row=" + row + "&col=" + col + "&color=" + color;
@@ -37,12 +55,18 @@ public class ClientConnector
             HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
             if (response.statusCode() == 200) {
                 return true;
-            } else {
-                // System.out.println("Failed to set color: " + response.body());
-                // System.out.println("Status code: " + response.statusCode());
-                // System.out.println("URL: " + url);
-                return false;
             }
+            // Handle error responses
+            // parse the response body for error details
+            Map<String, Object> errorDetails = parseErrorResponse(response.body());
+            String errorMessage = (String) errorDetails.get("error");
+            int errorCode = response.statusCode();
+
+            System.err.println("Error setting color at (" + row + ", " + col + ")");
+            System.err.println("Error message: " + errorMessage);
+            System.err.println("Error code: " + errorCode);
+
+            return false;
         } catch(Exception e) {
             throw new RuntimeException(e);
         }
