@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: games
+
+server:
+  port: 8080
+
+rplace:
+  grid:
+    width: 500
+    height: 500
+  cooldown-millis: 120000
+  max-pixels-per-batch: 20
