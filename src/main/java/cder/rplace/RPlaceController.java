@@ -28,8 +28,8 @@ public class RPlaceController
     @GetMapping("/canvas")
     public String canvas(Model model)
     {
-        model.addAttribute("width", service.getWidth());
-        model.addAttribute("height", service.getHeight());
+        model.addAttribute("width", service.getWidth() * service.getScale());
+        model.addAttribute("height", service.getHeight() * service.getScale());
         return "canvas";
     }
 

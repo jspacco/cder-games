@@ -85,6 +85,10 @@ public class RPlaceService
         return cachedImage;
     }
 
+    public int getScale() {
+        return grid.getScale();
+    }
+
     public int getWidth() {
         return grid.getWidth();
     }

@@ -4,8 +4,8 @@ public class Driver
 {
     public static void main(String[] args) {
         String baseUrl = "http://localhost:8080";
-        String user = "test";
-        String password = "foobar";
+        String user = "spacco";
+        String password = "test123";
 
         // This is a placeholder for the main method.
         // You can implement a simple test or run the Spring Boot application here.

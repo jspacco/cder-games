@@ -7,8 +7,9 @@ server:
 
 rplace:
   grid:
-    width: 500
-    height: 500
+    width: 100
+    height: 100
+    scale: 5
   cooldown-millis: 120000
   max-pixels-per-batch: 20
   # update the image every 2 seconds
