@@ -1,6 +1,5 @@
 package cder.rplace;
 
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -27,15 +26,15 @@ public class RPlaceController
 
     @GetMapping("/canvas")
     public String canvas(
-        @RequestParam String user,
-        @RequestParam String password,
+        // @RequestParam String user,
+        // @RequestParam String password,
         Model model)
     {
-        if (!service.authenticate(user, password))
-        {
-            model.addAttribute("error", "cannot authenticate "+user+" with given password");
-            return "error";
-        }
+        // if (!service.authenticate(user, password))
+        // {
+        //     model.addAttribute("error", "cannot authenticate "+user+" with given password");
+        //     return "error";
+        // }
         model.addAttribute("width", service.getWidth());
         model.addAttribute("height", service.getHeight());
         return "canvas";
@@ -50,17 +49,35 @@ public class RPlaceController
         @RequestParam String color,
         Model model)
     {
+        // authenticate user
         if (!service.authenticate(user, password))
         {
             model.addAttribute("error", "cannot authenticate "+user+" with given password");
             System.out.println("ERROR\n\n");
             return "error";
         }
-        // do all of these by calling methods in service
-        // TODO: rate limit for users
-        // TODO: check illegal row/col
-        // TODO: check illegal color
-        // TODO: eventually return an enum
+
+        // bounds check
+        if (!service.boundsCheck(row, col)) {
+            model.addAttribute("error", 
+                "row or column index out of bounds. Max row is "+
+                service.getHeight()+", max col is "+service.getWidth());
+            return "error";
+        }
+
+        // check if color is valid
+        if (!service.isValidColor(color)) {
+            model.addAttribute("error", "Invalid color: " + color);
+            return "error";
+        }
+
+        if (!service.canPlacePixel(user)) {
+            long nextPixelTime = service.getNextPixelTime(user);
+            String message = "Rate limit exceeded, next pixel in "+nextPixelTime+" ms";
+            System.out.println(message);
+            model.addAttribute("error", message);
+            return "error";
+        }
 
         boolean success = service.setColor(row, col, color);
         if (success) {

@@ -28,7 +28,7 @@ public class AccountManager
     }
 
     public boolean isValid(String username, String password) {
-        System.out.println("Checking credentials for user: " + username);
+        //System.out.println("Checking credentials for user: " + username);
         return password.equals(accounts.get(username));
     }
 

@@ -6,8 +6,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 
-import cder.connect4.C4GameState;
-
 public class ClientConnector
 {
 
@@ -34,15 +32,15 @@ public class ClientConnector
             .uri(URI.create(url))
             .GET()
             .build();
-        System.out.println("Request: " + request);
+        //System.out.println("Request: " + request);
         try {
             HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
             if (response.statusCode() == 200) {
                 return true;
             } else {
-                System.out.println("Failed to set color: " + response.body());
-                System.out.println("Status code: " + response.statusCode());
-                System.out.println("URL: " + url);
+                // System.out.println("Failed to set color: " + response.body());
+                // System.out.println("Status code: " + response.statusCode());
+                // System.out.println("URL: " + url);
                 return false;
             }
         } catch(Exception e) {
