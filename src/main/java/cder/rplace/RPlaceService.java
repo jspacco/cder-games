@@ -2,6 +2,7 @@ package cder.rplace;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import static java.lang.String.format;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -16,16 +17,22 @@ public class RPlaceService
     private final Map<String, UserQuota> userQuotas = new ConcurrentHashMap<>();
     private final int maxPixelsPerBatch;
     private final long cooldownMillis;
+    // for caching the last image update time
+    private final long imageUpdateFrequency;
+    private long lastImageUpdate;
+    private BufferedImage cachedImage;
 
 
     public RPlaceService(RPlaceGrid grid, AccountManager manager,
         @Value("${rplace.max-pixels-per-batch:20}") int maxPixelsPerBatch,
-        @Value("${rplace.cooldown-millis:120000}") long cooldownMillis)
+        @Value("${rplace.cooldown-millis:120000}") long cooldownMillis,
+        @Value("${rplace.image-update-frequency:2000}") long imageUpdateFrequency)
     {
         this.grid = grid;
         this.accountManager = manager;
         this.maxPixelsPerBatch = maxPixelsPerBatch;
         this.cooldownMillis = cooldownMillis;
+        this.imageUpdateFrequency = imageUpdateFrequency;
     }
 
     public boolean authenticate(String user, String password) {
@@ -69,7 +76,13 @@ public class RPlaceService
     }
 
     public BufferedImage getCurrentImage() {
-        return grid.getImage();
+        long now = System.currentTimeMillis();
+        if (cachedImage == null || now - lastImageUpdate > imageUpdateFrequency) {
+            // Update the cached image if it's null or cooldown has expired
+            cachedImage = grid.getImage();
+            lastImageUpdate = now;
+        }
+        return cachedImage;
     }
 
     public int getWidth() {
@@ -118,7 +131,7 @@ public class RPlaceService
     public int getNextPixelTime(String user) {
         UserQuota quota = userQuotas.get(user);
         if (quota == null) {
-            throw new IllegalArgumentException("User not found");
+            throw new AuthenticationException(format("User %s not found", user));
         }
         long now = System.currentTimeMillis();
         long nextPixelTime = quota.batchStartTime + cooldownMillis;

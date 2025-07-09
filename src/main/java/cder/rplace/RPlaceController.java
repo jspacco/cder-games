@@ -3,6 +3,7 @@ package cder.rplace;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import static java.lang.String.format;
 
 import javax.imageio.ImageIO;
 
@@ -44,37 +45,37 @@ public class RPlaceController
         // authenticate user
         if (!service.authenticate(user, password))
         {
-            throw new AuthenticationException("Cannot authenticate user: " + user);
+            throw new AuthenticationException(format("Cannot authenticate user %s ", user));
         }
 
         // bounds check
         if (!service.boundsCheck(row, col)) {
-            throw new BadPixelRequestException(
-                "Row "+row+" or col "+col+" out of bounds. "+
-                "Max row is "+
-                service.getHeight()+", max col is "+service.getWidth());
+            throw new BadPixelRequestException(format(
+                "Row %d or col %d out of bounds. "+
+                "Max row is %d, max col is %d", row, col, service.getHeight() - 1, service.getWidth() - 1));
+                
         }
 
         // check if color is valid
         if (!service.isValidColor(color)) {
-            throw new BadPixelRequestException("Invalid color: " + color + 
-                ". Valid colors are: red, blue, green, magenta, white, black, yellow, orange, cyan, pink, gray, darkgray, lightgray.");
+            throw new BadPixelRequestException(format(
+                "Invalid color %s. Valid color are: "+ 
+                "red, blue, green, magenta, white, black, yellow, orange, cyan, pink, gray, darkgray, lightgray.", color));
         }
 
         // rate limit check
         if (!service.canPlacePixel(user)) {
             int timeToNextPixel = service.getNextPixelTime(user);
-            throw new BadPixelRequestException("Rate limit exceeded for user: " + user+
-                ". Next pixel can be placed in " + timeToNextPixel +
-                " seconds.");
+            throw new BadPixelRequestException(format("Rate limit exceeded for user %s. "+
+                "Next pixel can be placed in %d ", user, timeToNextPixel));
         }
 
         boolean success = service.setColor(row, col, color);
         if (!success) {
-            throw new BadPixelRequestException(
-                "Failed to set color at (" + row + ", " + col + 
-                "). Unknown error! This should not happen if bounds and color checks passed."+
-                " Tell Spacco to check the server logs.");
+            throw new BadPixelRequestException(format(
+                "Failed to set color at (%d, %d). "+ 
+                "Unknown error! This should not happen if bounds and color checks passed."+
+                " Tell Spacco to check the server logs.", row, col));
         }
         model.addAttribute("success", "successfully setColor");
         model.addAttribute("width", service.getWidth());

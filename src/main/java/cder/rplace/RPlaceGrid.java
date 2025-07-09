@@ -22,15 +22,15 @@ public class RPlaceGrid
         this.grid = new Color[height][width];
     }
 
-    public void setColor(int row, int col, Color color) {
+    public synchronized void setColor(int row, int col, Color color) {
         if (row >= 0 && row < height && col >= 0 && col < width) {
             grid[row][col] = color;
         } else {
-            throw new IndexOutOfBoundsException("Row or column index out of bounds");
+            throw new BadPixelRequestException("Row or column index out of bounds");
         }
     }
 
-    public BufferedImage getImage() {
+    public synchronized BufferedImage getImage() {
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         for (int row = 0; row < height; row++) {
             for (int col = 0; col < width; col++) {
@@ -38,7 +38,8 @@ public class RPlaceGrid
                 if (color != null) {
                     image.setRGB(col, row, color.getRGB());
                 } else {
-                    image.setRGB(col, row, Color.WHITE.getRGB()); // Default to white if no color set
+                    // Default to white if no color set
+                    image.setRGB(col, row, Color.WHITE.getRGB()); 
                 }
             }
         }
