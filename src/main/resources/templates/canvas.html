@@ -1,17 +1,19 @@
 <html>
 <head>
     <title>RPlace Canvas</title>
+    <link rel="stylesheet" th:href="@{/styles.css}" />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="rplace-canvas">
     <h1>RPlace Canvas</h1>
-    <p th:if="${error}" style="color:red" th:text="${error}"></p>
-    <p th:if="${success}" style="color:black" th:text="${success}"></p>
+    <p th:if="${error}" class="error" th:text="${error}"></p>
+    <p th:if="${success}" class="success" th:text="${success}"></p>
+
 
 <img th:src="@{/rplace/image}" 
-     th:attr="width=${width}, height=${height}" 
-     alt="RPlace Canvas" 
-     style="border:1px solid black;"/>
-    <!-- style="width:100px; height:100px; border:1px solid black;"/> -->
+     th:attr="width=${width ?: 500}, height=${height ?: 500}" 
+     alt="RPlace Canvas"
+     class="rplace-img"/>
      
 </body>
 </html>

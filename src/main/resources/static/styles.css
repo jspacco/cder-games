@@ -1,0 +1,22 @@
+.rplace-canvas {
+    background-color: #f8f8f8;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+
+}
+
+.rplace-img {
+    border: 2px solid #333;
+    image-rendering: pixelated; /* for that low-res pixel art look */
+}
+
+.error {
+    color: red;
+    font-weight: bold;
+}
+
+.success {
+    color: green;
+    font-weight: bold;
+}
