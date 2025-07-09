@@ -1,12 +1,10 @@
 package cder.rplace;
 
-import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,11 +29,15 @@ public class ClientConnector
 
     private Map<String, Object> parseErrorResponse(String json) {
         try {
+            // Gson for the student client
             // Gson gson = new Gson();
             // Type mapType = new TypeToken<Map<String, Object>>() {}.getType();
             // Map<String, Object> result = gson.fromJson(json, mapType);
+            
+            // Jackson ObjectMapper
             ObjectMapper mapper = new ObjectMapper();
             Map<String, Object> result = mapper.readValue(json, Map.class);
+            
             return result;
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse error response", e);
