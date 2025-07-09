@@ -1,0 +1,17 @@
+<html>
+<head>
+    <title>RPlace Canvas</title>
+</head>
+<body>
+    <h1>RPlace Canvas</h1>
+    <p th:if="${error}" style="color:red" th:text="${error}"></p>
+    <p th:if="${success}" style="color:black" th:text="${success}"></p>
+
+<img th:src="@{/rplace/image}" 
+     th:attr="width=${width}, height=${height}" 
+     alt="RPlace Canvas" 
+     style="border:1px solid black;"/>
+    <!-- style="width:100px; height:100px; border:1px solid black;"/> -->
+     
+</body>
+</html>
