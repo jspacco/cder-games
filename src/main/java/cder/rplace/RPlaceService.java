@@ -17,8 +17,9 @@ public class RPlaceService
     private final Map<String, UserQuota> userQuotas = new ConcurrentHashMap<>();
     private final int maxPixelsPerBatch;
     private final long cooldownMillis;
-    // for caching the last image update time
-    private final long snapshotFrequency;
+    // How often should we generate a new image from the grid?
+    // we don't do this after ever pixel change to avoid performance issues
+    private final long imageUpdateFrequency;
     private long lastImageUpdate;
     private BufferedImage cachedImage;
 
@@ -26,13 +27,13 @@ public class RPlaceService
     public RPlaceService(RPlaceGrid grid, AccountManager manager,
         @Value("${rplace.max-pixels-per-batch:20}") int maxPixelsPerBatch,
         @Value("${rplace.cooldown-millis:120000}") long cooldownMillis,
-        @Value("${rplace.snapshot-frequency:2000}") long snapshotFrequency)
+        @Value("${rplace.image-update-frequency:2000}") long imageUpdateFrequency)
     {
         this.grid = grid;
         this.accountManager = manager;
         this.maxPixelsPerBatch = maxPixelsPerBatch;
         this.cooldownMillis = cooldownMillis;
-        this.snapshotFrequency = snapshotFrequency;
+        this.imageUpdateFrequency = imageUpdateFrequency;
     }
 
     public boolean authenticate(String user, String password) {
@@ -77,7 +78,7 @@ public class RPlaceService
 
     public BufferedImage getCurrentImage() {
         long now = System.currentTimeMillis();
-        if (cachedImage == null || now - lastImageUpdate > snapshotFrequency) {
+        if (cachedImage == null || now - lastImageUpdate > imageUpdateFrequency) {
             // Update the cached image if it's null or cooldown has expired
             cachedImage = grid.getImage();
             lastImageUpdate = now;
