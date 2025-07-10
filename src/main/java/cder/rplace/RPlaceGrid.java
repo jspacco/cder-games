@@ -3,6 +3,10 @@ package cder.rplace;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.nio.file.Files;
+
+import javax.imageio.ImageIO;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -19,12 +23,51 @@ public class RPlaceGrid
         @Value("${rplace.grid.width:200}") int width,
         @Value("${rplace.grid.height:200}") int height,
         @Value("${rplace.grid.default-color:white}") String defaultColor,
-        @Value("${rplace.grid.scale:3}") int scale)
+        @Value("${rplace.grid.scale:3}") int scale,
+        @Value("${rplace.reload-snapshot:false}") boolean reloadSnapshot,
+        @Value("${rplace.snapshot-dir:images/snapshots}") String snapshotDir)
     {
         this.width = width;
         this.height = height;
         this.scale = scale;
         this.grid = new Color[height][width];
+        if (reloadSnapshot) {
+            // reload most recent image from snapshotDir
+            try {
+                // list all files in snapshotDir
+                java.nio.file.Path dir = java.nio.file.Paths.get(snapshotDir);
+                java.nio.file.DirectoryStream<java.nio.file.Path> stream = Files.newDirectoryStream(dir, "*.png");
+                java.nio.file.Path latestFile = null;
+                for (java.nio.file.Path path : stream) {
+                    if (latestFile == null || Files.getLastModifiedTime(path).toMillis() > Files.getLastModifiedTime(latestFile).toMillis()) {
+                        latestFile = path;
+                    }
+                }
+                stream.close();
+                if (latestFile == null) {
+                    // no image found to load
+                    System.out.println("No snapshot image found in " + snapshotDir);
+                    return;
+                }
+
+                BufferedImage img = ImageIO.read(latestFile.toFile());
+                if (img != null) {
+                    for (int row = 0; row < height; row+=scale) {
+                        for (int col = 0; col < width; col+=scale) {
+                            if (row < img.getHeight() && col < img.getWidth()) {
+                                // the saved image was scaled
+                                grid[row/scale][col/scale] = new Color(img.getRGB(col, row));
+                            } else {
+                                // Default color
+                                grid[row][col] = Color.WHITE; 
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("Error loading snapshot image: " + e.getMessage());
+            }
+        }
     }
 
     public synchronized void setColor(int row, int col, Color color) {
