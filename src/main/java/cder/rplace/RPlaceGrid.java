@@ -16,8 +16,8 @@ public class RPlaceGrid
     private final int scale;
 
     public RPlaceGrid(
-        @Value("${rplace.grid.width}") int width,
-        @Value("${rplace.grid.height}") int height,
+        @Value("${rplace.grid.width:200}") int width,
+        @Value("${rplace.grid.height:200}") int height,
         @Value("${rplace.grid.default-color:white}") String defaultColor,
         @Value("${rplace.grid.scale:3}") int scale)
     {
