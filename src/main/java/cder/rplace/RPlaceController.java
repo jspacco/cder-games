@@ -8,6 +8,7 @@ import static java.lang.String.format;
 import javax.imageio.ImageIO;
 
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,7 +35,7 @@ public class RPlaceController
     }
 
     @GetMapping("/setColor")
-    public String setPixelColor(
+    public ResponseEntity<String> setPixelColor(
         @RequestParam String user,
         @RequestParam String password,
         @RequestParam int row, 
@@ -53,7 +54,6 @@ public class RPlaceController
             throw new BadPixelRequestException(format(
                 "Row %d or col %d out of bounds. "+
                 "Max row is %d, max col is %d", row, col, service.getHeight() - 1, service.getWidth() - 1));
-                
         }
 
         // check if color is valid
@@ -77,10 +77,8 @@ public class RPlaceController
                 "Unknown error! This should not happen if bounds and color checks passed."+
                 " Tell Spacco to check the server logs.", row, col));
         }
-        model.addAttribute("success", "successfully setColor");
-        model.addAttribute("width", service.getWidth());
-        model.addAttribute("height", service.getHeight());
-        return "canvas";
+
+        return ResponseEntity.ok("success");
     }
 
     @GetMapping(value = "/image", produces = MediaType.IMAGE_PNG_VALUE)
