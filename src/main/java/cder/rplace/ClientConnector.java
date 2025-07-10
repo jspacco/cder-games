@@ -44,7 +44,7 @@ public class ClientConnector
         }
     }
 
-    public boolean setColor(String user, String password, int row, int col, String color)
+    public boolean setColor(int row, int col, String color)
     {
         String url = baseUrl + "/rplace/setColor" + params + "&row=" + row + "&col=" + col + "&color=" + color;
         // Make HTTP request to set color
@@ -69,6 +69,62 @@ public class ClientConnector
             System.err.println("Error code: " + errorCode);
 
             return false;
+        } catch(Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public int getTimeToNextPixel()
+    {
+        String url = baseUrl + "/rplace/countdown" + params;
+        // Make HTTP request to get next pixel time
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(url))
+            .GET()
+            .build();
+        try {
+            HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                return Integer.parseInt(response.body());
+            }
+            // Handle error responses
+            Map<String, Object> errorDetails = parseErrorResponse(response.body());
+            String errorMessage = (String) errorDetails.get("error");
+            int errorCode = response.statusCode();
+
+            System.err.println("Error getting next pixel time for user " + user);
+            System.err.println("Error message: " + errorMessage);
+            System.err.println("Error code: " + errorCode);
+
+            return -1;
+        } catch(Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getStats()
+    {
+        String url = baseUrl + "/rplace/stats" + params;
+        // Make HTTP request to get stats
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(url))
+            .GET()
+            .build();
+        try {
+            HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                return response.body();
+            }
+            // Handle error responses
+            Map<String, Object> errorDetails = parseErrorResponse(response.body());
+            String errorMessage = (String) errorDetails.get("error");
+            int errorCode = response.statusCode();
+
+            System.err.println("Error getting stats for user " + user);
+            System.err.println("Error message: " + errorMessage);
+            System.err.println("Error code: " + errorCode);
+
+            return null;
         } catch(Exception e) {
             throw new RuntimeException(e);
         }

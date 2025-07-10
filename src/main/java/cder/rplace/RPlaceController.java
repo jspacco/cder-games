@@ -65,12 +65,12 @@ public class RPlaceController
 
         // rate limit check
         if (!service.canPlacePixel(user)) {
-            int timeToNextPixel = service.getNextPixelTime(user);
+            int timeToNextPixel = service.getTimeToNextPixel(user);
             throw new BadPixelRequestException(format("Rate limit exceeded for user %s. "+
                 "Next pixel can be placed in %d ", user, timeToNextPixel));
         }
 
-        boolean success = service.setColor(row, col, color);
+        boolean success = service.setColor(user, row, col, color);
         if (!success) {
             throw new BadPixelRequestException(format(
                 "Failed to set color at (%d, %d). "+ 
@@ -89,8 +89,35 @@ public class RPlaceController
         return baos.toByteArray();
     }
 
-    // @GetMapping("/stats")
-    // public @ResponseBody RPlaceStats getStats(@RequestParam String user) {
-    //     return service.getStats();
-    // }
+    @GetMapping("/stats")
+    public ResponseEntity<String> getStats(
+        @RequestParam String user,
+        @RequestParam String password)
+    {
+        // authenticate user
+        if (!service.authenticate(user, password)) {
+            throw new AuthenticationException(format("Cannot authenticate user %s ", user));
+        }
+
+        int timeToNextPixel = service.getTimeToNextPixel(user);
+        int totalPixelsPlaced = service.getNumPixelsPlaced(user);
+        return ResponseEntity.ok(
+            format("Next pixel can be placed in %d seconds\n"+
+                "User %s has placed %d pixels so far", 
+                    timeToNextPixel, user, totalPixelsPlaced));
+    }
+
+    @GetMapping("/countdown")
+    public ResponseEntity<String> getCountdown(
+        @RequestParam String user,
+        @RequestParam String password)
+    {
+        // authenticate user
+        if (!service.authenticate(user, password)) {
+            throw new AuthenticationException(format("Cannot authenticate user %s ", user));
+        }
+
+        int timeToNextPixel = service.getTimeToNextPixel(user);
+        return ResponseEntity.ok(timeToNextPixel+"");
+    }
 }

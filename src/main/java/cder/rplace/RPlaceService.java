@@ -15,6 +15,7 @@ public class RPlaceService
     private final RPlaceGrid grid;
     private final AccountManager accountManager;
     private final Map<String, UserQuota> userQuotas = new ConcurrentHashMap<>();
+    private final Map<String, Integer> userPixelCounts = new ConcurrentHashMap<>();
     private final int maxPixelsPerBatch;
     private final long cooldownMillis;
     // How often should we generate a new image from the grid?
@@ -40,10 +41,14 @@ public class RPlaceService
         return accountManager.isValid(user, password);
     }
 
-    public boolean setColor(int row, int col, String color)
+    public boolean setColor(String user, int row, int col, String color)
     {
         if (!boundsCheck(row, col)) return false;
         if (!isValidColor(color)) return false;
+        if (!canPlacePixel(user)) return false;
+
+        // holy crap, this actually works?
+        userPixelCounts.merge(user, 1, Integer::sum);
         
         Color c = toColor(color);
         grid.setColor(row, col, c);
@@ -133,7 +138,7 @@ public class RPlaceService
     }
 
 
-    public int getNextPixelTime(String user) {
+    public int getTimeToNextPixel(String user) {
         UserQuota quota = userQuotas.get(user);
         if (quota == null) {
             throw new AuthenticationException(format("User %s not found", user));
@@ -143,6 +148,10 @@ public class RPlaceService
         long timeToNextPixel = Math.max(0, nextPixelTime - now);
         // return time in seconds
         return (int) timeToNextPixel / 1000; 
+    }
+
+    public int getNumPixelsPlaced(String user) {
+        return userPixelCounts.getOrDefault(user, 0);
     }
 
 }
