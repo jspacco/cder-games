@@ -32,16 +32,17 @@ public class RPlaceImageSnapshotScheduler {
     @Scheduled(fixedRateString = "${rplace.snapshot-frequency:120000}")
     public void saveSnapshot() throws IOException 
     {
-        // get the raw image of the grid
-        // this is the one that is not scaled up
-        // BufferedImage image = grid.getRawImage();
         BufferedImage image;
         String json;
 
         synchronized (grid) {
             // get lock on grid class
             // This is used to avoid concurrency issues when accessing the grid
+            // get raw image, which is not scaled up
             image = grid.getRawImage();
+            // ownership grid of each pixel in JSON format
+            // this is used to track who owns each pixel
+            // so that students don't write offensive things
             json = grid.getOwnershipGridJson();
          }
         
@@ -57,7 +58,7 @@ public class RPlaceImageSnapshotScheduler {
         Path dir = Paths.get(snapshotDir);
         Files.createDirectories(dir);
 
-        Path outputFileImage = dir.resolve("rplace-" + timestamp + ".png");
+        Path outputFileImage = dir.resolve("rplace-image-" + timestamp + ".png");
         ImageIO.write(image, "png", outputFileImage.toFile());
 
         Path outputFileOwnership = dir.resolve("rplace-ownership-" + timestamp + ".json");
