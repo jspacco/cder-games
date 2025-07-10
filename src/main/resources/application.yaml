@@ -14,3 +14,4 @@ rplace:
   max-pixels-per-batch: 20
   # update the image every 2 seconds
   image-update-frequency: 2000
+  snapshot-dir: images/snapshots
