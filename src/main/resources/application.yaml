@@ -10,10 +10,13 @@ rplace:
     width: 100
     height: 100
     scale: 5
+  # rate limiting
   cooldown-millis: 120000
   max-pixels-per-batch: 20
   # update the image every 2 seconds
   image-update-frequency: 2000
-  # reload most recent snapshot
-  reload-snapshot: true
+  # snapshots
+  snapshot-frequency: 120000
   snapshot-dir: snapshots
+  # reload most recent snapshot upon startup?
+  reload-snapshot: true

@@ -19,7 +19,7 @@ public class RPlaceImageSnapshotScheduler {
 
     private final RPlaceGrid grid;
     
-    @Value("${rplace.snapshot-dir:images/snapshots}")
+    @Value("${rplace.snapshot-dir:snapshots}")
     private String snapshotDir;
 
     private BufferedImage lastSnapshot;
@@ -28,9 +28,8 @@ public class RPlaceImageSnapshotScheduler {
         this.grid = grid;
     }
 
-    // every 2 minutes
-    //@Scheduled(fixedRate = 120000)
-    @Scheduled(fixedRate = 5000)
+    // default every 2 minutes
+    @Scheduled(fixedRateString = "${rplace.snapshot-frequency:120000}")
     public void saveSnapshot() throws IOException 
     {
         // get the raw image of the grid
