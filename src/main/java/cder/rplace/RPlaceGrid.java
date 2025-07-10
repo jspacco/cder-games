@@ -16,6 +16,8 @@ import javax.imageio.ImageIO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 @Component
 public class RPlaceGrid 
 {
@@ -31,7 +33,7 @@ public class RPlaceGrid
         @Value("${rplace.grid.default-color:white}") String defaultColor,
         @Value("${rplace.grid.scale:3}") int scale,
         @Value("${rplace.reload-snapshot:false}") boolean reloadSnapshot,
-        @Value("${rplace.snapshot-dir:images/snapshots}") String snapshotDir)
+        @Value("${rplace.snapshot-dir:snapshots}") String snapshotDir)
     {
         this.width = width;
         this.height = height;
@@ -44,6 +46,10 @@ public class RPlaceGrid
             try {
                 // list all files in snapshotDir
                 Path dir = Paths.get(snapshotDir);
+                if (!Files.exists(dir)) {
+                    System.out.println("Snapshot directory does not exist: " + snapshotDir);
+                    return;
+                }
                 DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "*.png");
                 Path latestFile = null;
                 for (Path path : stream) {
@@ -97,7 +103,7 @@ public class RPlaceGrid
         ownershipMap.put("height", height);
         ownershipMap.put("ownership", ownershipGrid);
         try {
-            return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(ownershipMap);
+            return new ObjectMapper().writeValueAsString(ownershipMap);
         } catch (IOException e) {
             System.err.println("Error converting ownership grid to JSON: " + e.getMessage());
             throw new RuntimeException("Failed to convert ownership grid to JSON", e);
