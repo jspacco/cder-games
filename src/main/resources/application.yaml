@@ -6,9 +6,16 @@ server:
   port: 8080
 
 logging:
+  file:
+    name: logs/rplace.log  # relative to project root or working directory
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      #max-history: 7        # keep up to 7 archived logs
+      total-size-cap: 100MB # optional: delete old logs after 100MB
   level:
     root: info
-    cder.rplace: debug
+    cder.rplace: info
 
 rplace:
   grid:
