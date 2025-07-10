@@ -80,7 +80,7 @@ public class RPlaceService
         long now = System.currentTimeMillis();
         if (cachedImage == null || now - lastImageUpdate > imageUpdateFrequency) {
             // Update the cached image if it's null or cooldown has expired
-            cachedImage = grid.getImage();
+            cachedImage = grid.getScaledImage();
             lastImageUpdate = now;
         }
         return cachedImage;

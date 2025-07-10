@@ -4,7 +4,10 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.imageio.ImageIO;
 
@@ -35,10 +38,10 @@ public class RPlaceGrid
             // reload most recent image from snapshotDir
             try {
                 // list all files in snapshotDir
-                java.nio.file.Path dir = java.nio.file.Paths.get(snapshotDir);
-                java.nio.file.DirectoryStream<java.nio.file.Path> stream = Files.newDirectoryStream(dir, "*.png");
-                java.nio.file.Path latestFile = null;
-                for (java.nio.file.Path path : stream) {
+                Path dir = Paths.get(snapshotDir);
+                DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "*.png");
+                Path latestFile = null;
+                for (Path path : stream) {
                     if (latestFile == null || Files.getLastModifiedTime(path).toMillis() > Files.getLastModifiedTime(latestFile).toMillis()) {
                         latestFile = path;
                     }
@@ -52,11 +55,11 @@ public class RPlaceGrid
 
                 BufferedImage img = ImageIO.read(latestFile.toFile());
                 if (img != null) {
-                    for (int row = 0; row < height; row+=scale) {
-                        for (int col = 0; col < width; col+=scale) {
+                    for (int row = 0; row < height; row++) {
+                        for (int col = 0; col < width; col++) {
                             if (row < img.getHeight() && col < img.getWidth()) {
                                 // the saved image was scaled
-                                grid[row/scale][col/scale] = new Color(img.getRGB(col, row));
+                                grid[row][col] = new Color(img.getRGB(col, row));
                             } else {
                                 // Default color
                                 grid[row][col] = Color.WHITE; 
@@ -66,6 +69,7 @@ public class RPlaceGrid
                 }
             } catch (Exception e) {
                 System.err.println("Error loading snapshot image: " + e.getMessage());
+                throw new RuntimeException("Failed to load snapshot image", e);
             }
         }
     }
@@ -78,7 +82,28 @@ public class RPlaceGrid
         }
     }
 
-    public synchronized BufferedImage getImage() 
+    public synchronized BufferedImage getRawImage()
+    {
+        // Create a new BufferedImage that is the size of the grid
+        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = img.createGraphics();
+        for (int row = 0; row < height; row++) {
+            for (int col = 0; col < width; col++) {
+                if (grid[row][col] == null) {
+                    // Default color if no color is set
+                    g.setColor(Color.WHITE);
+                } else {
+                    // Use the color set in the grid
+                    g.setColor(grid[row][col]);
+                }
+                g.fillRect(col, row, 1, 1);
+            }
+        }
+        g.dispose();
+        return img;
+    }
+
+    public synchronized BufferedImage getScaledImage() 
     {
         BufferedImage img = new BufferedImage(width * scale, height * scale, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = img.createGraphics();

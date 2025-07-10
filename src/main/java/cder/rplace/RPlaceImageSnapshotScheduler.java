@@ -29,10 +29,13 @@ public class RPlaceImageSnapshotScheduler {
     }
 
     // every 2 minutes
-    @Scheduled(fixedRate = 120000)
+    //@Scheduled(fixedRate = 120000)
+    @Scheduled(fixedRate = 5000)
     public void saveSnapshot() throws IOException 
     {
-        BufferedImage image = grid.getImage();
+        // get the raw image of the grid
+        // this is the one that is not scaled up
+        BufferedImage image = grid.getRawImage();
 
         if (lastSnapshot != null && imagesAreEqual(lastSnapshot, image)) {
             // No change in the image, skip saving
