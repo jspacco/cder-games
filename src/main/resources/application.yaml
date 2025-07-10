@@ -16,4 +16,4 @@ rplace:
   image-update-frequency: 2000
   # reload most recent snapshot
   reload-snapshot: true
-  snapshot-dir: images/snapshots
+  snapshot-dir: snapshots

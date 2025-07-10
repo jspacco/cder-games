@@ -8,6 +8,8 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Component;
 public class RPlaceGrid 
 {
     private Color[][] grid;
+    private String[][] ownershipGrid;
     private final int width;
     private final int height;
     private final int scale;
@@ -34,8 +37,10 @@ public class RPlaceGrid
         this.height = height;
         this.scale = scale;
         this.grid = new Color[height][width];
+        this.ownershipGrid = new String[height][width];
         if (reloadSnapshot) {
             // reload most recent image from snapshotDir
+            // TODO: if available, load the grid ownership
             try {
                 // list all files in snapshotDir
                 Path dir = Paths.get(snapshotDir);
@@ -74,11 +79,28 @@ public class RPlaceGrid
         }
     }
 
-    public synchronized void setColor(int row, int col, Color color) {
+    public synchronized void setColor(String user, int row, int col, Color color) {
         if (row >= 0 && row < height && col >= 0 && col < width) {
             grid[row][col] = color;
+            ownershipGrid[row][col] = user;
         } else {
             throw new BadPixelRequestException("Row or column index out of bounds");
+        }
+    }
+
+    public synchronized String getOwnershipGridJson() 
+    {
+        // create json representation of the ownership grid
+        // use Jackson since it comes wiht Spring Boot
+        Map<String, Object> ownershipMap = new HashMap<>();
+        ownershipMap.put("width", width);
+        ownershipMap.put("height", height);
+        ownershipMap.put("ownership", ownershipGrid);
+        try {
+            return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(ownershipMap);
+        } catch (IOException e) {
+            System.err.println("Error converting ownership grid to JSON: " + e.getMessage());
+            throw new RuntimeException("Failed to convert ownership grid to JSON", e);
         }
     }
 

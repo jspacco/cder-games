@@ -35,7 +35,17 @@ public class RPlaceImageSnapshotScheduler {
     {
         // get the raw image of the grid
         // this is the one that is not scaled up
-        BufferedImage image = grid.getRawImage();
+        // BufferedImage image = grid.getRawImage();
+        BufferedImage image;
+        String json;
+
+        synchronized (grid) {
+            // get lock on grid class
+            // This is used to avoid concurrency issues when accessing the grid
+            image = grid.getRawImage();
+            json = grid.getOwnershipGridJson();
+         }
+        
 
         if (lastSnapshot != null && imagesAreEqual(lastSnapshot, image)) {
             // No change in the image, skip saving
@@ -48,9 +58,13 @@ public class RPlaceImageSnapshotScheduler {
         Path dir = Paths.get(snapshotDir);
         Files.createDirectories(dir);
 
-        Path outputFile = dir.resolve("rplace-" + timestamp + ".png");
-        ImageIO.write(image, "png", outputFile.toFile());
-        System.out.println("Saved snapshot to " + outputFile.toAbsolutePath());
+        Path outputFileImage = dir.resolve("rplace-" + timestamp + ".png");
+        ImageIO.write(image, "png", outputFileImage.toFile());
+
+        Path outputFileOwnership = dir.resolve("rplace-ownership-" + timestamp + ".json");
+        Files.writeString(outputFileOwnership, json);
+
+        System.out.println("Saved snapshot to " + outputFileImage.toAbsolutePath());
     }
 
     public boolean imagesAreEqual(BufferedImage img1, BufferedImage img2) {

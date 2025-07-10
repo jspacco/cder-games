@@ -51,7 +51,7 @@ public class RPlaceService
         userPixelCounts.merge(user, 1, Integer::sum);
         
         Color c = toColor(color);
-        grid.setColor(row, col, c);
+        grid.setColor(user, row, col, c);
         return true;
     }
     
