@@ -10,12 +10,16 @@ import java.time.format.DateTimeFormatter;
 
 import javax.imageio.ImageIO;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RPlaceImageSnapshotScheduler {
+public class RPlaceImageSnapshotScheduler 
+{
+    private static final Logger log = LoggerFactory.getLogger(RPlaceService.class);
 
     private final RPlaceGrid grid;
     
@@ -49,7 +53,7 @@ public class RPlaceImageSnapshotScheduler {
 
         if (lastSnapshot != null && imagesAreEqual(lastSnapshot, image)) {
             // No change in the image, skip saving
-            System.out.println("No changes detected in the image, skipping snapshot.");
+            log.info("No changes detected in the image, skipping snapshot.");
             return;
         }
         lastSnapshot = image;
@@ -64,7 +68,7 @@ public class RPlaceImageSnapshotScheduler {
         Path outputFileOwnership = dir.resolve("rplace-ownership-" + timestamp + ".json");
         Files.writeString(outputFileOwnership, json);
 
-        System.out.println("Saved snapshot to " + outputFileImage.toAbsolutePath());
+        log.info("Saved snapshot to " + outputFileImage.toAbsolutePath());
     }
 
     public boolean imagesAreEqual(BufferedImage img1, BufferedImage img2) {

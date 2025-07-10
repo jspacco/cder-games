@@ -14,6 +14,8 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +24,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Component
 public class RPlaceGrid 
 {
+    private static final Logger log = LoggerFactory.getLogger(RPlaceGrid.class);
+
     private Color[][] grid;
     private String[][] ownershipGrid;
     private final int width;
@@ -47,22 +51,22 @@ public class RPlaceGrid
                 // list all files in snapshotDir
                 Path dir = Paths.get(snapshotDir);
                 if (!Files.exists(dir)) {
-                    System.out.println("Snapshot directory does not exist: " + snapshotDir);
+                    log.warn("Snapshot directory does not exist: " + snapshotDir);
                     return;
                 }
                 Path latestFile = getMostRecentFileOfType(dir, "*.png");
                 if (latestFile == null) {
                     // no image found to load
-                    System.out.println("No snapshot image found in " + snapshotDir);
+                    log.warn("No snapshot image found in " + snapshotDir);
                     return;
                 }
 
                 String ownershipFileName = latestFile.getFileName().toString().replaceAll("image", "ownership");
                 ownershipFileName = ownershipFileName.replaceAll("\\.png", ".json");
                 Path ownershipFile = dir.resolve(ownershipFileName);
-                //System.out.println("\n\n\nwill try to load " + latestFile.toAbsolutePath() + " and " + ownershipFile.toAbsolutePath() + "\n\n\n");
+                log.trace("will try to load " + latestFile.toAbsolutePath() + " and " + ownershipFile.toAbsolutePath());
                 if (!Files.exists(ownershipFile)) {
-                    System.out.println("No ownership file found for " + latestFile.getFileName());
+                    log.warn("No ownership file found for " + latestFile.getFileName());
                     return;
                 }
 
@@ -80,7 +84,7 @@ public class RPlaceGrid
                         }
                     }
                 }
-                System.out.println("Loaded snapshot image from " + latestFile.toAbsolutePath());
+                log.info("Loaded snapshot image from " + latestFile.toAbsolutePath());
 
                 // Load ownership grid from JSON file
                 String json = Files.readString(ownershipFile);
@@ -100,9 +104,8 @@ public class RPlaceGrid
                         }
                     }
                 }
-                System.out.println("\n\n\n\n\nLoaded ownership data from " + ownershipFile.toAbsolutePath());
             } catch (Exception e) {
-                System.err.println("Error loading snapshot image: " + e.getMessage());
+                log.error("Error loading snapshot image: " + e.getMessage());
                 throw new RuntimeException("Failed to load snapshot image", e);
             }
         }
@@ -144,7 +147,7 @@ public class RPlaceGrid
         try {
             return new ObjectMapper().writeValueAsString(ownershipMap);
         } catch (IOException e) {
-            System.err.println("Error converting ownership grid to JSON: " + e.getMessage());
+            log.error("Error converting ownership grid to JSON: " + e.getMessage());
             throw new RuntimeException("Failed to convert ownership grid to JSON", e);
         }
     }

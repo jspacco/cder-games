@@ -1,6 +1,8 @@
 package cder.rplace;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
@@ -15,6 +17,8 @@ import java.util.*;
 @Component
 public class AccountManager 
 {
+    private static final Logger log = LoggerFactory.getLogger(AccountManager.class);
+
     private final Map<String, String> accounts = new HashMap<>();
 
     @PostConstruct
@@ -25,7 +29,7 @@ public class AccountManager
         if (Files.exists(externalPath)) {
             try (BufferedReader reader = Files.newBufferedReader(externalPath)) {
                 loadFromReader(reader);
-                System.out.println("Loaded accounts from config/accounts.txt");
+                log.info("Loaded accounts from config/accounts.txt");
                 return;
             }
         }
@@ -34,7 +38,7 @@ public class AccountManager
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
                 getClass().getResourceAsStream("/accounts.txt")))) {
             loadFromReader(reader);
-            System.out.println("✅ Loaded accounts from classpath");
+            log.info("✅ Loaded accounts from classpath");
         }
     }
 
@@ -55,7 +59,7 @@ public class AccountManager
 
 
     public boolean isValid(String username, String password) {
-        //System.out.println("Checking credentials for user: " + username);
+        log.trace("Checking credentials for user: " + username);
         return password.equals(accounts.get(username));
     }
 
