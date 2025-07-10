@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
@@ -42,7 +43,6 @@ public class RPlaceGrid
         this.ownershipGrid = new String[height][width];
         if (reloadSnapshot) {
             // reload most recent image from snapshotDir
-            // TODO: if available, load the grid ownership
             try {
                 // list all files in snapshotDir
                 Path dir = Paths.get(snapshotDir);
@@ -50,17 +50,19 @@ public class RPlaceGrid
                     System.out.println("Snapshot directory does not exist: " + snapshotDir);
                     return;
                 }
-                DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "*.png");
-                Path latestFile = null;
-                for (Path path : stream) {
-                    if (latestFile == null || Files.getLastModifiedTime(path).toMillis() > Files.getLastModifiedTime(latestFile).toMillis()) {
-                        latestFile = path;
-                    }
-                }
-                stream.close();
+                Path latestFile = getMostRecentFileOfType(dir, "*.png");
                 if (latestFile == null) {
                     // no image found to load
                     System.out.println("No snapshot image found in " + snapshotDir);
+                    return;
+                }
+
+                String ownershipFileName = latestFile.getFileName().toString().replaceAll("image", "ownership");
+                ownershipFileName = ownershipFileName.replaceAll("\\.png", ".json");
+                Path ownershipFile = dir.resolve(ownershipFileName);
+                //System.out.println("\n\n\nwill try to load " + latestFile.toAbsolutePath() + " and " + ownershipFile.toAbsolutePath() + "\n\n\n");
+                if (!Files.exists(ownershipFile)) {
+                    System.out.println("No ownership file found for " + latestFile.getFileName());
                     return;
                 }
 
@@ -78,11 +80,48 @@ public class RPlaceGrid
                         }
                     }
                 }
+                System.out.println("Loaded snapshot image from " + latestFile.toAbsolutePath());
+
+                // Load ownership grid from JSON file
+                String json = Files.readString(ownershipFile);
+                ObjectMapper mapper = new ObjectMapper();
+                Map<String, Object> ownershipMap = mapper.readValue(json, Map.class);
+                if (!ownershipMap.containsKey("ownership")) {
+                    //TODO: better excpetion?
+                    throw new RuntimeException("Pixel Ownership data not found in JSON");
+                }
+                // json deserialized into List<List<String>> and not Object[][]
+                List<List<String>> ownershipList = (List<List<String>>) ownershipMap.get("ownership");
+                for (int row = 0; row < height; row++) {
+                    for (int col = 0; col < width; col++) { 
+                        if (row < ownershipList.size() && col < ownershipList.get(0).size()) {
+                            // Cast to String, assuming ownership is stored as String
+                            ownershipGrid[row][col] = (String) ownershipList.get(row).get(col);
+                        }
+                    }
+                }
+                System.out.println("\n\n\n\n\nLoaded ownership data from " + ownershipFile.toAbsolutePath());
             } catch (Exception e) {
                 System.err.println("Error loading snapshot image: " + e.getMessage());
                 throw new RuntimeException("Failed to load snapshot image", e);
             }
         }
+    }
+
+    private Path getMostRecentFileOfType(Path dir, String glob) throws IOException {
+        Path latestFile = null;
+        long latestTime = 0;
+
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, glob)) {
+            for (Path entry : stream) {
+                long lastModified = Files.getLastModifiedTime(entry).toMillis();
+                if (lastModified > latestTime) {
+                    latestTime = lastModified;
+                    latestFile = entry;
+                }
+            }
+        }
+        return latestFile;
     }
 
     public synchronized void setColor(String user, int row, int col, Color color) {
