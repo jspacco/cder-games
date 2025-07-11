@@ -1,0 +1,18 @@
+<html>
+<head>
+    <title>RPlace Colors</title>
+    <link rel="stylesheet" th:href="@{/styles.css}" />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body class="rplace-canvas">
+    <h1>r/place Colors</h1>
+
+
+    <div th:each="entry : ${colors}">
+        <div class="rplace-palette-entry">
+            <span th:text="${entry.key} + ': ' + ${entry.value}"></span> &nbsp;
+            <div class="rplace-color-block" th:style="'background-color:' + ${entry.value}"></div>
+        </div>
+    </div>
+</body>
+</html>

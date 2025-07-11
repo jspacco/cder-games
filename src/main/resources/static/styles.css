@@ -11,6 +11,20 @@
     image-rendering: pixelated; /* for that low-res pixel art look */
 }
 
+.rplace-color-block {
+    width: 40px;
+    height: 40px;
+    display: inline-block;
+    margin-right: 10px;
+    border: 1px solid #000;
+}
+
+.rplace-palette-entry {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
 .error {
     color: red;
     font-weight: bold;

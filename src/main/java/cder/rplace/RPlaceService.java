@@ -14,6 +14,7 @@ public class RPlaceService
 {   
     private final RPlaceGrid grid;
     private final AccountManager accountManager;
+    private final RPlaceConfig config;
     private final Map<String, UserQuota> userQuotas = new ConcurrentHashMap<>();
     private final Map<String, Integer> userPixelCounts = new ConcurrentHashMap<>();
     private final int maxPixelsPerBatch;
@@ -25,13 +26,14 @@ public class RPlaceService
     private BufferedImage cachedImage;
 
 
-    public RPlaceService(RPlaceGrid grid, AccountManager manager,
+    public RPlaceService(RPlaceGrid grid, AccountManager manager, RPlaceConfig config,
         @Value("${rplace.max-pixels-per-batch:20}") int maxPixelsPerBatch,
         @Value("${rplace.cooldown-millis:120000}") long cooldownMillis,
         @Value("${rplace.image-update-frequency:2000}") long imageUpdateFrequency)
     {
         this.grid = grid;
         this.accountManager = manager;
+        this.config = config;
         this.maxPixelsPerBatch = maxPixelsPerBatch;
         this.cooldownMillis = cooldownMillis;
         this.imageUpdateFrequency = imageUpdateFrequency;
@@ -62,23 +64,7 @@ public class RPlaceService
     private Color toColor(String color)
     {
         color = color.toLowerCase();
-        switch(color) {
-            case "red": return Color.RED;
-            case "blue": return Color.BLUE;
-            case "green": return Color.GREEN;
-            case "magenta": return Color.MAGENTA;
-            case "white": return Color.WHITE;
-            case "black": return Color.BLACK;
-            case "yellow": return Color.YELLOW;
-            case "orange": return Color.ORANGE;
-            case "cyan": return Color.CYAN;
-            case "pink": return Color.PINK;
-            case "gray": return Color.GRAY;
-            case "darkgray": return Color.DARK_GRAY;
-            case "lightgray": return Color.LIGHT_GRAY;
-            default:
-            return null; // invalid color
-        }
+        return config.getColor(color);
     }
 
     public BufferedImage getCurrentImage() {

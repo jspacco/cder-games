@@ -20,10 +20,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @RequestMapping("/rplace")
 public class RPlaceController 
 {
-    private RPlaceService service;
+    private final RPlaceService service;
+    private final RPlaceConfig config;
 
-    public RPlaceController(RPlaceService service) {
+    public RPlaceController(RPlaceService service, RPlaceConfig config) {
         this.service = service;
+        this.config = config;
     }
 
     @GetMapping("/canvas")
@@ -120,4 +122,12 @@ public class RPlaceController
         int timeToNextPixel = service.getTimeToNextPixel(user);
         return ResponseEntity.ok(timeToNextPixel+"");
     }
+
+    @GetMapping("/colors")
+    public String palette(Model model) {
+        //model.addAttribute("colorsHex", config.getColorsAsHex());
+        model.addAttribute("colors", config.getColorsAsHex());
+        return "colors";
+    }
+
 }

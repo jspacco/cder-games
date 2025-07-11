@@ -15,7 +15,7 @@ public class Driver
         LOOP:
         for (int row = 0; row < 100; row++) {
             for (int col = 0; col < 100; col++) {
-                String color = "red"; // or any other color you want to test
+                String color = "4"; 
                 boolean success = connector.setColor(row, col, color);
                 if (!success) {
                     System.out.println("Failed to set color at (" + row + ", " + col + ")");
