@@ -6,12 +6,16 @@ import static java.lang.String.format;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class RPlaceService 
 {   
+    private Logger log = LoggerFactory.getLogger(RPlaceService.class);
+
     private final RPlaceGrid grid;
     private final AccountManager accountManager;
     private final RPlaceConfig config;
@@ -48,6 +52,9 @@ public class RPlaceService
         if (!boundsCheck(row, col)) return false;
         if (!isValidColor(color)) return false;
         if (!canPlacePixel(user)) return false;
+
+        UserQuota quota = userQuotas.computeIfAbsent(user, u -> new UserQuota(0, System.currentTimeMillis()));
+        quota.pixelsUsed++;
 
         // holy crap, this actually works?
         userPixelCounts.merge(user, 1, Integer::sum);
@@ -104,12 +111,7 @@ public class RPlaceService
                 quota.batchStartTime = now;
             }
 
-            if (quota.pixelsUsed < maxPixelsPerBatch) {
-                quota.pixelsUsed++;
-                return true;
-            } else {
-                return false; // quota exceeded
-            }
+            return quota.pixelsUsed < maxPixelsPerBatch;
         }
     }
 
