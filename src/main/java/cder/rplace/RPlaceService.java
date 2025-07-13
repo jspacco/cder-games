@@ -49,6 +49,7 @@ public class RPlaceService
 
     public boolean setColor(String user, int row, int col, String color)
     {
+        log.trace("setColor called by user {} at ({}, {}) with color {}", user, row, col, color);
         if (!boundsCheck(row, col)) return false;
         if (!isValidColor(color)) return false;
         if (!canPlacePixel(user)) return false;
