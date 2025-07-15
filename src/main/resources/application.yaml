@@ -7,12 +7,14 @@ server:
 
 logging:
   file:
-    name: logs/rplace.log  # relative to project root or working directory
+    name: logs/rplace.log 
   logback:
     rollingpolicy:
       max-file-size: 10MB
-      #max-history: 7        # keep up to 7 archived logs
-      total-size-cap: 100MB # optional: delete old logs after 100MB
+      # keep up to 7 archived logs
+      #max-history: 7
+      # delete old logs after 100MB 
+      total-size-cap: 100MB 
   level:
     root: info
     cder.rplace: info
@@ -32,6 +34,8 @@ rplace:
   snapshot-dir: snapshots
   # reload most recent snapshot upon startup?
   reload-snapshot: true
+  # these colors are from day 3 of 2022 rplace
+  # https://lospec.com/palette-list/r-place-2022-day3
   colors:
     0: "#6d001a"
     1: "#be0039"
